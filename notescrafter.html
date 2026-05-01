@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GenzKit – Make Your Notes Printable</title>
+  <meta name="description" content="AI-powered PDF enhancement and formatting tool. Invert colors, clear backgrounds, arrange slides and more." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- pdf-lib -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ─── HEADER ─────────────────────────────────────────────── -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <a href="https://genzkit.vercel.app/index.html" class="logo" aria-label="GenzKit Home">
+        <span class="logo-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="8" fill="url(#lg)"/>
+            <path d="M7 9h14M7 14h10M7 19h12" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="lg" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FFD700"/><stop offset="1" stop-color="#D4AF37"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="logo-text">GenzKit</span>
+      </a>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="https://genzkit.vercel.app/index.html" class="nav-link">Home</a>
+        <a href="https://genzkit.vercel.app/note-formatter.html" class="nav-link">Notes Writer</a>
+        <a href="https://genzkit.vercel.app/contact.html" class="nav-link">Support</a>
+      </nav>
+      <button class="nav-cta" aria-label="NOTES CRAFTER for free">NOTES CRAFTER</button>
+    </div>
+  </header>
+
+  <!-- ─── MAIN ──────────────────────────────────────────────── -->
+  <main class="main" id="main">
+
+    <!-- Hero text (shown on step 1) -->
+    <section class="hero" id="hero-section" aria-label="Hero">
+      <div class="hero-badge">
+        <span class="badge-dot" aria-hidden="true"></span>
+        Ultimate Processing By Team Ryan
+      </div>
+      <h1 class="hero-title">Make Your Notes <span class="gradient-text">Printable</span></h1>
+      <p class="hero-sub">Upload, enhance, and download your documents with advanced AI filtering and a next-generation interface.</p>
+    </section>
+
+    <!-- ─── STEP PROGRESS BAR ─────────────────────────────── -->
+    <div class="step-container" id="step-bar" aria-label="Progress steps">
+      <div class="step-track">
+        <div class="step-line" id="step-line" aria-hidden="true"></div>
+        <button class="step-circle active" id="step-1" data-step="1" aria-label="Step 1: Upload" aria-current="step">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </span>
+          <span class="step-check" aria-hidden="true">✓</span>
+          <span class="step-label">Upload</span>
+        </button>
+        <button class="step-circle" id="step-2" data-step="2" aria-label="Step 2: Preview">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          </span>
+          <span class="step-check" aria-hidden="true">✓</span>
+          <span class="step-label">Preview</span>
+        </button>
+        <button class="step-circle" id="step-3" data-step="3" aria-label="Step 3: Enhance">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+          </span>
+          <span class="step-check" aria-hidden="true">✓</span>
+          <span class="step-label">Enhance</span>
+        </button>
+        <button class="step-circle" id="step-4" data-step="4" aria-label="Step 4: Format">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
+          </span>
+          <span class="step-check" aria-hidden="true">✓</span>
+          <span class="step-label">Format</span>
+        </button>
+        <button class="step-circle" id="step-5" data-step="5" aria-label="Step 5: Process">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+          </span>
+          <span class="step-check" aria-hidden="true">✓</span>
+          <span class="step-label">Process</span>
+        </button>
+        <button class="step-circle" id="step-6" data-step="6" aria-label="Step 6: Download">
+          <span class="step-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </span>
+          <span class="step-check" aria-hidden="true">✓</span>
+          <span class="step-label">Download</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 1: UPLOAD ───────────────────────────────────── -->
+    <section class="section active" id="section-upload" aria-label="Upload PDF">
+      <div class="glass-card upload-card">
+        <div class="upload-zone" id="upload-zone" role="button" tabindex="0"
+          aria-label="Drop PDF here or click to browse"
+          ondragover="App.handleDragOver(event)"
+          ondragleave="App.handleDragLeave(event)"
+          ondrop="App.handleDrop(event)"
+          onclick="document.getElementById('file-input').click()"
+          onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('file-input').click()">
+          <input type="file" id="file-input" accept=".pdf,application/pdf"
+            style="display:none" aria-label="Choose PDF file" onchange="App.handleFileSelect(event)" />
+          <div class="upload-icon" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="24" fill="rgba(255,215,0,0.12)"/>
+              <path d="M24 32V18M17 25l7-7 7 7" stroke="url(#ul)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 36h20" stroke="url(#ul2)" stroke-width="2.5" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="ul" x1="17" y1="18" x2="31" y2="32" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#FFD700"/><stop offset="1" stop-color="#D4AF37"/>
+                </linearGradient>
+                <linearGradient id="ul2" x1="14" y1="36" x2="34" y2="36" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#FFD700"/><stop offset="1" stop-color="#D4AF37"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <p class="upload-title">Drop your PDF here</p>
+          <p class="upload-sub">or <span class="upload-link">browse from device</span></p>
+          <button class="btn btn-primary upload-btn" type="button"
+            onclick="event.stopPropagation();document.getElementById('file-input').click()">
+            Select PDF(s)
+          </button>
+          <p class="upload-hint">You can select multiple PDFs. Upload limit: your device capacity</p>
+        </div>
+
+        <!-- File info (hidden until file selected) -->
+        <div class="file-info" id="file-info" style="display:none" aria-live="polite">
+          <div class="file-info-row">
+            <div class="file-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="file-details">
+              <span class="file-name" id="file-name">document.pdf</span>
+              <span class="file-meta" id="file-meta">2.1 MB · Loading pages…</span>
+            </div>
+            <button class="file-remove" id="file-remove" onclick="App.removeFile()" aria-label="Remove file" title="Remove">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="file-stats" id="file-stats">
+            <div class="stat-box">
+              <span class="stat-label">File Size</span>
+              <span class="stat-value" id="stat-size">—</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Pages</span>
+              <span class="stat-value" id="stat-pages">—</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Status</span>
+              <span class="stat-value stat-ok" id="stat-status">Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="warning-banner" id="size-warning" style="display:none" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span id="warning-text">Large file detected. Processing may take longer on mobile.</span>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-primary" id="upload-continue" onclick="App.goToStep(2)" disabled aria-label="Continue to preview">
+          Continue
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- More Tools Card -->
+      <div class="more-tools-container" aria-label="More tools">
+        <a href="https://genzkit.vercel.app/index.html" class="more-tools-card">
+          <div class="more-tools-icon" aria-hidden="true">✨</div>
+          <strong>More Tools</strong>
+          <span>Explore all GenzKit tools</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ─── STEP 2: PREVIEW & REMOVE PAGES ──────────────────── -->
+    <section class="section" id="section-preview" aria-label="Preview and remove pages">
+      <div class="section-header">
+        <h2 class="section-title">Preview &amp; Remove Pages</h2>
+        <p class="section-sub">Deselect any pages you want to remove from the final document.</p>
+      </div>
+      <div class="preview-toolbar">
+        <span class="selected-count" id="selected-count" aria-live="polite">0 of 0 pages selected</span>
+        <div class="preview-toolbar-actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.selectAllPages()" aria-label="Select all pages">Select All</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.deselectAllPages()" aria-label="Deselect all pages">Deselect All</button>
+        </div>
+      </div>
+      <div class="page-grid" id="page-grid" aria-label="Page thumbnails" role="list">
+        <!-- Page thumbnails injected here -->
+      </div>
+      <div class="step-actions">
+        <button class="btn btn-ghost" onclick="App.goToStep(1)" aria-label="Back to upload">Back</button>
+        <button class="btn btn-primary" id="preview-continue" onclick="App.goToStep(3)" aria-label="Continue to enhance">
+          Continue with <span id="continue-page-count">0</span> Pages
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ─── STEP 3: ENHANCE & FORMAT ────────────────────────── -->
+    <section class="section" id="section-enhance" aria-label="Enhance and format settings">
+      <div class="section-header">
+        <h2 class="section-title">Enhance &amp; Format</h2>
+        <p class="section-sub">Customize your document with our enhancement tools.</p>
+      </div>
+
+      <div class="file-badge" id="enhance-file-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span id="enhance-filename">document.pdf</span>
+        <div class="file-badge-stats">
+          <span id="enhance-size">—</span>
+          <span class="dot">·</span>
+          <span id="enhance-pages">— pages</span>
+        </div>
+        <button class="btn btn-danger-ghost btn-xs" onclick="App.removeFile()" aria-label="Remove file">Remove</button>
+      </div>
+
+      <div class="enhance-grid">
+        <!-- Left: Enhancement -->
+        <div class="glass-card enhance-card" aria-labelledby="enhancement-label">
+          <h3 class="card-title" id="enhancement-label">Enhancement</h3>
+          <p class="card-sub">Apply AI-powered enhancements</p>
+
+          <div class="setting-group">
+            <span class="setting-group-label">Filters</span>
+
+            <label class="toggle-row" for="toggle-invert">
+              <span class="toggle-info">
+                <span class="toggle-name">Invert Colors</span>
+                <span class="toggle-desc">Flip dark backgrounds to white</span>
+              </span>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="toggle-invert" class="toggle-input" aria-label="Invert colors" />
+                <span class="toggle-track" aria-hidden="true"></span>
+              </div>
+            </label>
+
+            <label class="toggle-row" for="toggle-clear-bg">
+              <span class="toggle-info">
+                <span class="toggle-name">Clear PDF Background</span>
+                <span class="toggle-desc">Remove colored backgrounds</span>
+              </span>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="toggle-clear-bg" class="toggle-input" aria-label="Clear background" />
+                <span class="toggle-track" aria-hidden="true"></span>
+              </div>
+            </label>
+
+            <label class="toggle-row" for="toggle-grayscale">
+              <span class="toggle-info">
+                <span class="toggle-name">Grayscale (B&amp;W)</span>
+                <span class="toggle-desc">Convert to black &amp; white</span>
+              </span>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="toggle-grayscale" class="toggle-input" aria-label="Grayscale" />
+                <span class="toggle-track" aria-hidden="true"></span>
+              </div>
+            </label>
+          </div>
+
+          <div class="setting-group">
+            <span class="setting-group-label">Output Quality</span>
+            <div class="radio-group" role="radiogroup" aria-label="Output quality">
+              <label class="radio-row" for="q-low">
+                <input type="radio" id="q-low" name="quality" value="low" aria-label="Low quality" />
+                <span>Low</span>
+              </label>
+              <label class="radio-row" for="q-med">
+                <input type="radio" id="q-med" name="quality" value="medium" aria-label="Medium quality" />
+                <span>Medium</span>
+              </label>
+              <label class="radio-row active" for="q-high">
+                <input type="radio" id="q-high" name="quality" value="high" checked aria-label="High quality" />
+                <span>High</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <span class="setting-group-label">Add Page Numbers</span>
+            <div class="radio-group" role="radiogroup" aria-label="Add page numbers">
+              <label class="radio-row" for="pn-no">
+                <input type="radio" id="pn-no" name="pagenumbers" value="no" aria-label="No page numbers" />
+                <span>No</span>
+              </label>
+              <label class="radio-row active" for="pn-yes">
+                <input type="radio" id="pn-yes" name="pagenumbers" value="yes" checked aria-label="Yes, add page numbers" />
+                <span>Yes</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Layout -->
+        <div class="glass-card layout-card" aria-labelledby="layout-label">
+          <h3 class="card-title" id="layout-label">Layout</h3>
+          <p class="card-sub">Arrange your document pages</p>
+
+          <div class="setting-group">
+            <span class="setting-group-label">Document Size</span>
+            <div class="btn-toggle-group" role="radiogroup" aria-label="Document size">
+              <label class="btn-toggle" for="size-orig">
+                <input type="radio" id="size-orig" name="docsize" value="original" aria-label="Original size" />
+                <span>Original</span>
+              </label>
+              <label class="btn-toggle active" for="size-a4">
+                <input type="radio" id="size-a4" name="docsize" value="a4" checked aria-label="A4 size" />
+                <span>A4</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <span class="setting-group-label">Orientation</span>
+            <div class="btn-toggle-group" role="radiogroup" aria-label="Orientation">
+              <label class="btn-toggle active" for="orient-portrait">
+                <input type="radio" id="orient-portrait" name="orientation" value="portrait" checked aria-label="Portrait orientation" />
+                <span>Portrait</span>
+              </label>
+              <label class="btn-toggle" for="orient-landscape">
+                <input type="radio" id="orient-landscape" name="orientation" value="landscape" aria-label="Landscape orientation" />
+                <span>Landscape</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <span class="setting-group-label">Slides per Page</span>
+            <div class="selects-row">
+              <div class="select-wrap">
+                <label for="sel-rows" class="select-label">Rows</label>
+                <select id="sel-rows" class="sel" aria-label="Rows per page" onchange="App.updateLayoutPreview()">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
+              <span class="select-x" aria-hidden="true">×</span>
+              <div class="select-wrap">
+                <label for="sel-cols" class="select-label">Columns</label>
+                <select id="sel-cols" class="sel" aria-label="Columns per page" onchange="App.updateLayoutPreview()">
+                  <option value="1" selected>1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <span class="setting-group-label">Layout Preview</span>
+            <div class="layout-preview" id="layout-preview" aria-label="Layout preview" role="img">
+              <!-- Cells injected by JS -->
+            </div>
+            <p class="layout-preview-label" id="layout-preview-label">3×1 slides per page</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost" onclick="App.goToStep(2)" aria-label="Back to preview">Back</button>
+        <button class="btn btn-primary" onclick="App.startProcessing()" aria-label="Start processing">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg>
+          Process File
+        </button>
+      </div>
+    </section>
+
+    <!-- ─── STEP 4 (inline with step 3) handled by enhance section ─── -->
+
+    <!-- ─── STEP 5: PROCESSING ──────────────────────────────── -->
+    <section class="section" id="section-processing" aria-label="Processing document" aria-live="polite">
+      <div class="glass-card processing-card">
+        <div class="processing-anim" aria-hidden="true">
+          <div class="proc-orbit">
+            <div class="proc-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="url(#pg)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><defs><linearGradient id="pg" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD700"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs></svg>
+            </div>
+          </div>
+          <div class="orbit-ring ring-1"></div>
+          <div class="orbit-ring ring-2"></div>
+        </div>
+
+        <h2 class="proc-title" id="proc-status">Processing your document…</h2>
+        <p class="proc-sub" id="proc-detail">Initializing…</p>
+
+        <div class="progress-wrap" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Processing progress" id="progress-bar-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+            <div class="progress-glow" id="progress-glow"></div>
+          </div>
+          <div class="progress-info">
+            <span class="progress-pct" id="progress-pct">0%</span>
+            <span class="progress-eta" id="progress-eta">Calculating…</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── STEP 6: SUCCESS / DOWNLOAD ──────────────────────── -->
+    <section class="section" id="section-success" aria-label="Download complete">
+      <div class="glass-card success-card">
+        <div class="success-icon" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 class="success-title">Success!</h2>
+        <p class="success-sub">Your document has been enhanced and is ready for download.</p>
+
+        <div class="result-card">
+          <div class="result-file-row">
+            <div class="result-file-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div>
+              <span class="result-filename" id="result-filename">document_processed.pdf</span>
+              <span class="result-type">Enhanced PDF</span>
+            </div>
+          </div>
+          <hr class="result-divider" />
+          <div class="result-stats">
+            <div class="result-stat">
+              <span class="rs-label">Original Size</span>
+              <span class="rs-value" id="result-orig-size">—</span>
+            </div>
+            <div class="result-stat">
+              <span class="rs-label">Final Size</span>
+              <span class="rs-value" id="result-final-size">—</span>
+            </div>
+            <div class="result-stat">
+              <span class="rs-label">Pages</span>
+              <span class="rs-value" id="result-pages">—</span>
+            </div>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-primary" id="download-btn" onclick="App.downloadResult()" aria-label="Download processed PDF">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download
+            </button>
+            <button class="btn btn-secondary" onclick="App.processAnother()" aria-label="Process another document">Process Another</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="support-card glass-card" aria-label="Support">
+        <div class="support-icon" aria-hidden="true">♥</div>
+        <h3 class="support-title">Enjoying GenzKit?</h3>
+        <p class="support-text">This tool is completely free and runs entirely in your browser for maximum privacy. If you find it useful, consider supporting the project to help keep it running!</p>
+        <button class="btn btn-primary support-btn">♥ Support This Project</button>
+        <p class="support-footer">100% browser-based · No data uploaded · Privacy first</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─── TOAST NOTIFICATIONS ──────────────────────────────── -->
+  <div class="toast-container" id="toast-container" aria-live="assertive" aria-atomic="true" role="status"></div>
+
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
