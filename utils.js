@@ -82,16 +82,16 @@ const Utils = (() => {
 
   /* ── Get JPEG quality from setting ──────────────────── */
   function getJpegQuality(setting) {
-    const map = { low: 0.45, medium: 0.7, high: 0.92 };
+    const map = { low: 0.72, medium: 0.85, high: 0.95 };
     return map[setting] ?? 0.85;
   }
 
   /* ── Get render scale based on quality + device ──────── */
   function getRenderScale(quality) {
     if (isLowEndDevice() || isMobile()) {
-      return quality === 'low' ? 0.8 : quality === 'medium' ? 1.2 : 1.6;
+      return quality === 'low' ? 1.5 : quality === 'medium' ? 2.2 : 3.2;
     }
-    return quality === 'low' ? 1.0 : quality === 'medium' ? 1.5 : 2.0;
+    return quality === 'low' ? 2.2 : quality === 'medium' ? 3.2 : 4.5;
   }
 
   /* ── Release canvas memory ───────────────────────────── */
@@ -105,7 +105,7 @@ const Utils = (() => {
 
   /* ── Apply image filter on canvas context ────────────── */
   function applyFilters(ctx, width, height, opts) {
-    if (!opts.invert && !opts.grayscale && !opts.clearBg) return;
+    if (!opts.invert && !opts.grayscale && !opts.clearBg && !opts.darken) return;
     const imageData = ctx.getImageData(0, 0, width, height);
     const data = imageData.data;
     const len = data.length;
@@ -124,6 +124,15 @@ const Utils = (() => {
           // Will be handled by invert below
         } else if (brightness > 220) {
           // Already light — keep
+        }
+      }
+
+      // Darken Text
+      if (opts.darken) {
+        const lum = (r * 299 + g * 587 + b * 114) / 1000;
+        if (lum < 200) {
+          const f = Math.pow(lum / 200, 0.5); 
+          r *= f; g *= f; b *= f;
         }
       }
 

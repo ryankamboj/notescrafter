@@ -9,6 +9,7 @@ const App = (() => {
   const state = {
     currentStep: 1,
     file: null,
+    files: [],
     pdfDoc: null,          // PDF.js document
     totalPages: 0,
     selectedPages: [],     // 1-indexed page numbers to include
@@ -100,16 +101,18 @@ const App = (() => {
     e.stopPropagation();
     document.getElementById('upload-zone').classList.remove('drag-over');
     const files = e.dataTransfer.files;
-    if (files.length) processFile(files[0]);
+    if (files.length) processFiles(files, true);
   }
 
   function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file) processFile(file);
+    const files = e.target.files;
+    if (files.length) processFiles(files, true);
+    e.target.value = '';
   }
 
   function removeFile() {
     state.file = null;
+    state.files = [];
     state.pdfDoc = null;
     state.totalPages = 0;
     state.selectedPages = [];
@@ -127,53 +130,81 @@ const App = (() => {
   }
 
   async function processFile(file) {
-    // Validate PDF
-    if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
-      Utils.toast('Please upload a valid PDF file.', 'error');
+    await processFiles([file]);
+  }
+
+  async function processFiles(filesList, append = false) {
+    const incoming = Array.from(filesList).filter(f => f.type.includes('pdf') || f.name.toLowerCase().endsWith('.pdf'));
+    if (!incoming.length) {
+      if (!append) Utils.toast('Please upload valid PDF files.', 'error');
       return;
     }
 
-    // Size warning (> 50 MB)
+    if (append) {
+      state.files = [...state.files, ...incoming];
+    } else {
+      state.files = incoming;
+    }
+
+    const files = state.files;
+    let totalSize = files.reduce((acc, f) => acc + f.size, 0);
+
     const warnEl = document.getElementById('size-warning');
-    if (file.size > 50 * 1024 * 1024) {
+    if (totalSize > 50 * 1024 * 1024) {
       document.getElementById('warning-text').textContent =
-        `Large file (${Utils.formatBytes(file.size)}) detected. Processing may take longer on mobile.`;
+        `Large files (${Utils.formatBytes(totalSize)}) detected. Processing may take longer on mobile.`;
       warnEl.style.display = 'flex';
     } else {
       warnEl.style.display = 'none';
     }
 
-    state.file = file;
+    state.file = files.length === 1 ? files[0] : { name: `${files.length} merged PDFs`, size: totalSize };
 
-    // Show file info
     const infoEl = document.getElementById('file-info');
     infoEl.style.display = 'block';
-    document.getElementById('file-name').textContent = Utils.truncateName(file.name);
+    document.getElementById('file-name').textContent = Utils.truncateName(state.file.name);
     document.getElementById('file-meta').textContent =
-      Utils.formatBytes(file.size) + ' · Loading pages…';
-    document.getElementById('stat-size').textContent = Utils.formatBytes(file.size);
+      Utils.formatBytes(totalSize) + ' · Loading pages…';
+    document.getElementById('stat-size').textContent = Utils.formatBytes(totalSize);
     document.getElementById('stat-pages').textContent = '…';
     document.getElementById('stat-status').textContent = 'Loading';
     document.getElementById('stat-status').className = 'stat-value';
 
-    // Load with PDF.js (just to get page count — don't render yet)
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      let arrayBuffer;
+      if (files.length === 1) {
+        arrayBuffer = await files[0].arrayBuffer();
+      } else {
+        document.getElementById('stat-status').textContent = 'Merging...';
+        const { PDFDocument } = PDFLib;
+        const mergedPdf = await PDFDocument.create();
+        for (const f of files) {
+          try {
+            const buf = await f.arrayBuffer();
+            const doc = await PDFDocument.load(buf);
+            const copiedPages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+            copiedPages.forEach((page) => mergedPdf.addPage(page));
+          } catch(e) {
+            console.error('Failed to merge file', f.name, e);
+          }
+        }
+        const mergedBytes = await mergedPdf.save();
+        arrayBuffer = mergedBytes.buffer;
+      }
+
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       const pdf = await loadingTask.promise;
       state.pdfDoc = pdf;
       state.totalPages = pdf.numPages;
-      // Select all pages by default
       state.selectedPages = Array.from({ length: pdf.numPages }, (_, i) => i + 1);
 
       document.getElementById('stat-pages').textContent = pdf.numPages;
       document.getElementById('file-meta').textContent =
-        Utils.formatBytes(file.size) + ' · ' + pdf.numPages + ' pages';
+        Utils.formatBytes(totalSize) + ' · ' + pdf.numPages + ' pages';
       document.getElementById('stat-status').textContent = 'Ready';
       document.getElementById('stat-status').className = 'stat-value stat-ok';
       document.getElementById('upload-continue').disabled = false;
 
-      // Warn for very large PDFs
       if (pdf.numPages > 100) {
         document.getElementById('warning-text').textContent =
           `${pdf.numPages}-page document detected. Processing batched for performance.`;
@@ -355,12 +386,14 @@ const App = (() => {
   function updateLayoutPreview() {
     const rows = parseInt(document.getElementById('sel-rows').value) || 3;
     const cols = parseInt(document.getElementById('sel-cols').value) || 1;
+    const orientation = document.querySelector('input[name="orientation"]:checked')?.value || 'portrait';
     const preview = document.getElementById('layout-preview');
     const label = document.getElementById('layout-preview-label');
     if (!preview) return;
 
     preview.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
     preview.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    preview.style.aspectRatio = orientation === 'landscape' ? '841.89 / 595.28' : '595.28 / 841.89';
 
     preview.innerHTML = '';
     for (let i = 0; i < rows * cols; i++) {
@@ -369,7 +402,7 @@ const App = (() => {
       preview.appendChild(cell);
     }
 
-    if (label) label.textContent = `${rows}×${cols} slides per page`;
+    if (label) label.textContent = `${rows}×${cols} slides per page (${orientation})`;
   }
 
   /* ── Collect settings from form ──────────────────────── */
@@ -378,6 +411,7 @@ const App = (() => {
       invert: document.getElementById('toggle-invert').checked,
       clearBg: document.getElementById('toggle-clear-bg').checked,
       grayscale: document.getElementById('toggle-grayscale').checked,
+      darken: document.getElementById('toggle-darken')?.checked || false,
       quality: document.querySelector('input[name="quality"]:checked')?.value || 'high',
       pageNumbers: document.querySelector('input[name="pagenumbers"]:checked')?.value === 'yes',
       docSize: document.querySelector('input[name="docsize"]:checked')?.value || 'a4',
@@ -461,7 +495,7 @@ const App = (() => {
           group, pdfDoc, renderScale, rows, cols,
           s.docSize === 'a4' ? outW : null,
           s.docSize === 'a4' ? outH : null,
-          { invert: s.invert, clearBg: s.clearBg, grayscale: s.grayscale },
+          { invert: s.invert, clearBg: s.clearBg, grayscale: s.grayscale, darken: s.darken },
           jpegQuality
         );
 
@@ -482,14 +516,14 @@ const App = (() => {
         if (s.pageNumbers && font) {
           const pageNum = globalIdx + 1;
           const numStr = String(pageNum);
-          const fs = 9;
+          const fs = 10;
           const tw = font.widthOfTextAtSize(numStr, fs);
           page.drawText(numStr, {
             x: page.getWidth() / 2 - tw / 2,
-            y: 10,
+            y: 15,
             size: fs,
             font,
-            color: rgb(0.4, 0.4, 0.4)
+            color: rgb(0.3, 0.3, 0.3)
           });
         }
 
@@ -695,6 +729,7 @@ const App = (() => {
       state.pdfDoc.destroy().catch(() => {});
     }
     state.file = null;
+    state.files = [];
     state.pdfDoc = null;
     state.totalPages = 0;
     state.selectedPages = [];
@@ -740,6 +775,17 @@ const App = (() => {
           });
         });
       });
+    });
+
+    // Orientation change listener
+    document.querySelectorAll('input[name="orientation"]').forEach(radio => {
+      radio.addEventListener('change', updateLayoutPreview);
+    });
+
+    // Rows/Cols change listener
+    ['sel-rows', 'sel-cols'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', updateLayoutPreview);
     });
 
     // Initial layout preview render
